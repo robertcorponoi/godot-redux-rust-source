@@ -1,12 +1,12 @@
 <p align="center">
-  <img width="250" height="250" src="https://raw.githubusercontent.com/robertcorponoi/graphics/master/godot-redux/logo/godot-redux-logo.png">
+  <img width="222" height="208" src="https://raw.githubusercontent.com/robertcorponoi/graphics/master/godot-redux/logo/godot-redux-rust-logo.png">
 </p>
 
-<h1 align="center">Godot Redux</h1>
+<h1 align="center">Godot Redux Rust</h1>
 
 <p align="center">A nativescript implementation of Redux.<p>
 
-**Note:** This is the source code for the [nativescript version](https://github.com:robertcorponoi/godot-redux-rust) version of [Godot Redux](https://github.com:robertcorponoi/godot-redux). Although this is in Rust, this is still aimed at people who want to use Redux in gdscript. If you're looking for a pure Rust solution to Redux, I recommend checking out [redux-rs](https://github.com/redux-rs/redux-rs).
+**Note:** This is the source code for the nativescript version of [Godot Redux](https://github.com:robertcorponoi/godot-redux). Although this is in Rust, this is still aimed at people who want to use Redux in gdscript. If you're looking for a pure Rust solution to Redux, I recommend checking out [redux-rs](https://github.com/redux-rs/redux-rs). The source code for this can be found at [godot-redux-rust-source](https://github.com:robertcorponoi/godot-redux-rust-source).
 
 Redux is a way to manage and update your application's state using events
 called actions. The Redux store serves as a centralized place for data that
@@ -25,6 +25,7 @@ can be used across your entire application.
 - [How To Use the Store In Other Scripts](#how-to-use-the-store-in-other-scripts)
 - [API](#api)
     - [new](#new)
+    - [set_state_and_reducer](#set_state_and_reducer)
     - [state](#state)
     - [dispatch](#dispatch)
     - [subscribe](#subscribe)
@@ -127,7 +128,8 @@ func reducer(state, action):
             }
 
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
 ```
 
 ### Dispatching
@@ -153,7 +155,9 @@ changed like so:
 
 ```gd
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
+
     store.subscribe(self, 'display_counter')
 
 func display_counter(state):
@@ -183,7 +187,9 @@ func reverse_middleware(state, action):
             return Action.INCREMENT
 
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
+    
     store.add_middleware(self, 'reverse_middleware')
 
     This will actually run the `DECREMENT` action because of our middleware.
@@ -238,11 +244,12 @@ func reducer(state, action):
 
 So the reducer function will always take the state and action being dispatched as its arguments. We use a match statement so taht when `INCREMENT` is used, the counter will increase by 1 and when `DECREMENT` is used, the counter will decrease by 1. Two other things to note here. One, notice that we're returning a new copy of the state in each match arm and two, we can use the previous value of the state to create the new one.
 
-7. Let's put this all together and create the `Store` instance. To create a new store instance, we need to pass in our initial state, the class instance that has the reducer function, and the name of the reducer function like so:
+7. Let's put this all together and create the `Store` instance. To create a new store instance, we need to pass in our initial state, the class instance that has the reducer function, and the name of the reducer function. Note that this part is different than the gdscript implementation of godot-redux due to limitations with Godot Rust. With the nativescript version, we have to pass the initial state and reducers in the `set_state_and_reducer` method like so:
 
 ```gd
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
 ```
 
 Since our reducer function is just named 'reducer' and it's on the current class instnace, we can just pass `self` and 'reducer` as the last two arguments.
@@ -251,7 +258,9 @@ Since our reducer function is just named 'reducer' and it's on the current class
 
 ```gd
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
+
     store.dispatch(Action.INCREMENT)
     store.dispatch(Action.INCREMENT)
     store.dispatch(Action.DECREMENT)
@@ -261,7 +270,9 @@ If everything worked correctly, this should put the counter at 1, so let's see:
 
 ```gd
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
+
     store.dispatch(Action.INCREMENT)
     store.dispatch(Action.INCREMENT)
     store.dispatch(Action.DECREMENT)
@@ -275,7 +286,9 @@ The above is a basic example of how to set up and use the store. We didn't go ov
 
 ```gd
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
+
     store.subscribe(self, 'counter_printer')
 
 func counter_printer(state):
@@ -288,7 +301,9 @@ Note that `subscribe` is similar to how the store was initialized in that you ha
 
 ```gd
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
+
     store.add_middleware(self, 'reverse_action')
 
 func reverse_action(state, action):
@@ -304,7 +319,9 @@ We can test to see if this works by dispatching the same actions we did earlier 
 
 ```gd
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
+
     store.add_middleware(self, 'reverse_action')
 
     store.dispatch(Action.INCREMENT)
@@ -381,6 +398,37 @@ As shown in the example above you can now use your store anywhere by referencing
 
 Creates a new Redux store.
 
+**Example:**
+
+```gd
+const state = {
+    "counter": 0,
+}
+
+enum Action {
+    INCREMENT,
+    DECREMENT,
+}
+
+func reducer(state, action):
+    match action:
+        Action.INCREMENT:
+            return {
+                "counter": state.counter + 1,
+            }
+        Action.DECREMENT:
+            return {
+                "counter": state.counter - 1,
+            }
+
+func _ready():
+    var store = Store.new()
+```
+
+### set_state_and_reducer
+
+Sets the initial state and reducer for the store. Normally this is provided on initialization but due to a limitation of Godot Rust, we have to pass these values through this method.
+
 | param               | type       | description                                            |
 |---------------------|------------|--------------------------------------------------------|
 | state               | Dictionary | The initial state of the application.                  |
@@ -411,7 +459,8 @@ func reducer(state, action):
             }
 
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
 ```
 
 ### state
@@ -422,7 +471,9 @@ Returns the current state.
 
 ```gd
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
+
     var state = store.state()
 ```
 
@@ -458,7 +509,9 @@ func reducer(state, action):
             }
 
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
+
     store.dispatch(Action.INCREMENT)
 ```
 
@@ -495,7 +548,9 @@ func reducer(state, action):
             }
 
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
+
     store.subscribe(self, 'counter_printer')
 
 func counter_printer(state):
@@ -515,7 +570,9 @@ Adds a middleware function to intercept dispatches before they reach the reducer
 
 ```gd
 func _ready():
-    var store = Store.new(state, self, 'reducer')
+    var store = Store.new()
+    store.set_state_and_reducer(state, self, 'reducer')
+    
     store.add_middleware(self, 'reverse_action')
 
     store.dispatch(Action.INCREMENT)
