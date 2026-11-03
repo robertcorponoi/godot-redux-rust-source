@@ -1,8 +1,11 @@
-mod godot_redux;
-use gdnative::prelude::*;
+// src/lib.rs
 
-fn init(handle: InitHandle) {
-    handle.add_class::<godot_redux::GodotRedux>();
-}
+mod godot_redux; // keep your module
 
-godot_init!(init);
+use godot::prelude::*;
+
+// v0.4+ GDExtension entrypoint. No InitHandle or godot_init! macro.
+struct GodotReduxLib;
+
+#[gdextension]
+unsafe impl ExtensionLibrary for GodotReduxLib {}
